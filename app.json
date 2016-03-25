@@ -1,0 +1,8 @@
+{
+  "name": "Mother, do I deserve these GBPS?",
+  "description": "Mother is all caring, but many times she is a bitch. she watchs the catalog for us",
+  "repository": "https://github.com/heroku/node-js-getting-started",
+  "logo": "http://node-js-sample.herokuapp.com/node.svg",
+  "keywords": ["node", "gbp", "love"],
+  "image": "heroku/nodejs"
+}
