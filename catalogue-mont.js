@@ -6,11 +6,12 @@ var util = require("util");
 var fs = require("fs");
 
 var port = (process.env.PORT || 5000);
-var rateInSeconds = 15;
-var nowThreads = {};
-var pastThreads = {};
+var rateInSeconds = 30;
+var nowThreads = null;
+var pastThreads = null;
 
 var archivedTHreads = [];
+var newThreads = [];
 
 var memoryUsage = [];
 
@@ -77,7 +78,7 @@ function processHTML(url, body, context) {
     var scripts = $('script');
 
     setImmediate(function () {
-        var mem, now, threads;
+        var mem, now, threads, k;
         scripts.each(function (index, elm) {
             var e = $(this), v = e.attr('src'), scrpt;
             if (v == null) {
@@ -93,17 +94,53 @@ function processHTML(url, body, context) {
 
         sandbox.catalog = {};
 
-        now = (new Date());
-        mem = (process.memoryUsage().heapTotal / (1024 * 1024));
-        memoryUsage.push([now, mem]);
-        console.log(now + " parsed " + url + ", mem usage: " + mem);
-
         //duplicate the archived thing
         sandbox.catalog = global.catalog;
         threads = global.catalog.threads;
+        nowThreads = {};
         for(k in threads){
             nowThreads[k] = dupe(prototype_of_desiredinfo, threads[k]);
         }
+
+        var goneThreads = {}, totals = 0, archived = 0, newposts = 0, acp;
+
+        if(pastThreads != null){
+            for(k in pastThreads){
+                if(!nowThreads.hasOwnProperty(k)){
+                    acp = {};
+                    acp[k] = pastThreads[k];
+                    archivedTHreads.push(acp);
+                    archived++;
+                }
+                totals++;
+            }
+            var newthreadssince = {
+                snapedOn: new Date(),
+                posts: {}
+            };
+
+            for(k in nowThreads){
+                if(!pastThreads.hasOwnProperty(k)){
+                    newposts++;
+                    newthreadssince.posts[k] = nowThreads[k];
+                }
+            }
+
+            if(newposts >= 1){
+                newThreads.push(newthreadssince);
+            }
+        }
+
+        pastThreads = nowThreads;
+
+
+        now = (new Date());
+        mem = Math.round((process.memoryUsage().heapTotal / (1024 * 1024))*100)/100;
+        memoryUsage.push([now, mem]);
+
+
+        console.log(now + " parsed " + url + ", mem usage: " + mem + " n/a/t: " +newposts+"/"+archived+"/"+totals);
+
         sandbox.catalog = {threads: nowThreads};
     });
 
@@ -111,16 +148,32 @@ function processHTML(url, body, context) {
 
 //fs.writeFileSync("catalogue.json", JSON.stringify(sandbox.catalog.threads));
 
+var startTime = new Date();
+
 http.createServer(function (req, res) {
-    if (req.url === '/mem') {
+    if(req.url == "/up"){
+        res.end(JSON.stringify({init: startTime, up: (Date.now() - startTime)}));
+    }else if (req.url == '/mem') {
         res.end(JSON.stringify(memoryUsage));
     }else if(req.url == "/active"){
         res.end(JSON.stringify(nowThreads));
-    }else if(req.url =="/archive"){
-        res.end(JSON.stringify(archivedTHreads));
+    }else if(req.url =="/archive") {
+        res.end(JSON.stringify(archivedTHreads.reverse()));
+    }else if(req.url =="/new") {
+        res.end(JSON.stringify(newThreads.reverse()));
+    }else if(req.url =="/dump"){
+        /*heapdump.writeSnapshot('./heap' + Date.now() + '.heapsnapshot', function(err, c){
+            res.end("mommy finished taking a dump.");
+        });*/
     }else{
         res.end(JSON.stringify(sandbox.catalog.threads));
     }
 }).listen(port, function () {
     console.log("created server, %s", port);
 })
+
+
+
+function monitor(opts, desiredOut, monitorRate){
+
+}
