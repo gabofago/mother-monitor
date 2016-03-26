@@ -7,7 +7,7 @@ nodejs monitor for chong's catalog.
 
 then
 
-``node catalogue-moint.js`` will run the crawler on localhost:5000
+``node catalogue-mont.js`` will run the crawler on localhost:5000
 
 ## api end points
 ``get /active`` returns a json response of active threads
