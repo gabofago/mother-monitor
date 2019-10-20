@@ -159,9 +159,9 @@ http.createServer(function (req, res) {
     }else if(req.url == "/active"){
         res.end(JSON.stringify(nowThreads));
     }else if(req.url =="/archive") {
-        res.end(JSON.stringify(archivedTHreads.reverse()));
+        res.end(JSON.stringify(archivedTHreads));
     }else if(req.url =="/new") {
-        res.end(JSON.stringify(newThreads.reverse()));
+        res.end(JSON.stringify(newThreads));
     }else if(req.url =="/dump"){
         /*heapdump.writeSnapshot('./heap' + Date.now() + '.heapsnapshot', function(err, c){
             res.end("mommy finished taking a dump.");
