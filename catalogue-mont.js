@@ -151,6 +151,7 @@ function processHTML(url, body, context) {
 var startTime = new Date();
 
 http.createServer(function (req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
     if(req.url == "/up"){
         res.end(JSON.stringify({init: startTime, up: (Date.now() - startTime)}));
     }else if (req.url == '/mem') {
